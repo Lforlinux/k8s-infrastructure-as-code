@@ -28,6 +28,11 @@ apply:
 	@echo "ArgoCD Server URL: $$($(EXEC) output -raw argocd_server_url)"
 	@echo "ArgoCD Username: $$($(EXEC) output -raw argocd_username)"
 	@echo "ArgoCD Password: $$($(EXEC) output -raw argocd_password)"
+	@echo ""
+	@echo "Applying app-of-apps manifest..."
+	@aws eks --region $$($(EXEC) output -raw region) update-kubeconfig --name $$($(EXEC) output -raw cluster_name) || true
+	@sleep 10
+	@kubectl apply -f https://raw.githubusercontent.com/Lforlinux/k8s-platform-toolkit/main/argocd/app-of-apps.yaml || echo "Note: Ensure kubectl is configured and ArgoCD is ready"
 
 .PHONY: apply-auto-approve
 apply-auto-approve:
@@ -40,9 +45,21 @@ apply-auto-approve:
 	@echo "ArgoCD Server URL: $$($(EXEC) output -raw argocd_server_url)"
 	@echo "ArgoCD Username: $$($(EXEC) output -raw argocd_username)"
 	@echo "ArgoCD Password: $$($(EXEC) output -raw argocd_password)"
+	@echo ""
+	@echo "Applying app-of-apps manifest..."
+	@aws eks --region $$($(EXEC) output -raw region) update-kubeconfig --name $$($(EXEC) output -raw cluster_name) || true
+	@sleep 10
+	@kubectl apply -f https://raw.githubusercontent.com/Lforlinux/k8s-platform-toolkit/main/argocd/app-of-apps.yaml || echo "Note: Ensure kubectl is configured and ArgoCD is ready"
+
+.PHONY: cleanup-argocd
+cleanup-argocd:
+	@echo "Cleaning up ArgoCD applications..."
+	@kubectl delete application k8s-platform-toolkit -n argocd --ignore-not-found=true || true
+	@kubectl delete -f https://raw.githubusercontent.com/Lforlinux/k8s-platform-toolkit/main/argocd/app-of-apps.yaml --ignore-not-found=true || true
+	@echo "ArgoCD applications cleaned up"
 
 .PHONY: destroy
-destroy:
+destroy: cleanup-argocd
 	@$(EXEC) destroy -no-color
 
 .PHONY: deploy
@@ -57,3 +74,8 @@ deploy:
 	@echo "ArgoCD Server URL: $$($(EXEC) output -raw argocd_server_url)"
 	@echo "ArgoCD Username: $$($(EXEC) output -raw argocd_username)"
 	@echo "ArgoCD Password: $$($(EXEC) output -raw argocd_password)"
+	@echo ""
+	@echo "Applying app-of-apps manifest..."
+	@aws eks --region $$($(EXEC) output -raw region) update-kubeconfig --name $$($(EXEC) output -raw cluster_name) || true
+	@sleep 10
+	@kubectl apply -f https://raw.githubusercontent.com/Lforlinux/k8s-platform-toolkit/main/argocd/app-of-apps.yaml || echo "Note: Ensure kubectl is configured and ArgoCD is ready"
