@@ -68,3 +68,14 @@ resource "helm_release" "argocd" {
 
   depends_on = [module.eks]
 }
+
+resource "helm_release" "gatekeeper" {
+  name       = "gatekeeper"
+  repository = "https://open-policy-agent.github.io/gatekeeper/charts"
+  chart      = "gatekeeper"
+  namespace  = "gatekeeper-system"
+  timeout    = 600
+  create_namespace = true
+
+  depends_on = [module.eks]
+}
